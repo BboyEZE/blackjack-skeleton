@@ -87,9 +87,10 @@
  display: inline-block;
 }
 
-#dealer_hand{
+#dealer_hand, #player_hand{
     display: flex;
     flex-wrap: wrap;
+    height: 215px;
 }
 
 #points{

@@ -4,6 +4,9 @@
 /////////////////////////////////////////////////////////////////////////////////
 //view.js
 //addMessage(msg) – adds a given text (msg) to the message div.
+
+
+
 function addMessage(msg) {
     var messageDiv = document.getElementById("messagediv");
     if (messageDiv !== null)
@@ -15,6 +18,8 @@ function addMessage(msg) {
 //clearMessages – Removes all messages from the message div.
 function clearMessages() {
 
+    var messageDiv = document.getElementById("messagediv");
+    messageDiv.innerHTML = "";
 }
 
 //show a div given the div's ID
@@ -29,7 +34,8 @@ function hideDiv(divID) {
 }
 
 //check if a class has a given class
-function hasClass(element, className) { return element.classList.contains(className);}
+function hasClass(element, className) 
+{ return element.classList.contains(className);}
 
 //adds a given class to an element if it does not have the class. Does nothing otherwise.
 function addClass(element, className) {
@@ -50,3 +56,34 @@ function addUsername(username){
         usernameDiv.innerText = username;
     }
 }
+
+function showDealtCard(player, facedown, card){
+    if(player === 'player'){
+        let playerDiv = document.getElementById('player_hand');
+        playerDiv.innerHTML += `<div class="card_deck" id = "${card}"><div>`
+    }
+    else{
+        let playerDiv = document.getElementById('dealer_hand');
+
+        if(facedown){
+            playerDiv.innerHTML += `<div class="card_deck" id = "facedown"><div>`
+        }
+        else{
+            playerDiv.innerHTML += `<div class="card_deck" id = "${card}"><div>`
+        }
+    }
+}
+
+function updateBet(bet){
+
+}
+
+function resetView(){
+    let playerHandDiv = document.getElementById("player_hand")
+    let dealerHandDiv = document.getElementById("dealer_hand")
+
+    playerHandDiv.innerHTML = '';
+    dealerHandDiv.innerHTML = '';
+}
+
+

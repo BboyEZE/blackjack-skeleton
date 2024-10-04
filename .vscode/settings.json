@@ -2,5 +2,6 @@
     "files.associations": {
         "iomanip": "cpp",
         "iostream": "cpp"
-    }
+    },
+    "liveServer.settings.port": 5503
 }
