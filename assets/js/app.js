@@ -8,19 +8,24 @@ var gamePlay = {
     Blackjack: Object.create(blackjack),
 
     playGame: function(){
+
         blackjack.initialize();
     },
 
     getUsername: function(){
-
+        //get the content after the ? in the url
+        const urlParams = new URLSearchParams(window.location.search);
+        //get the username from the url
+        const username = urlParams.get('username');
+        return username;
     },
 
     isGameOver: function(){
-
+        
     },
 
     reset: function(){
-        blackjack.discardHands();s
+        blackjack.discardHands();
 
     },
     

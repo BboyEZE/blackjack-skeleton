@@ -108,3 +108,43 @@
     display: flex;
     flex-direction: row;
 }
+
+
+.canHit, .canNotHit {
+    opacity: 1;
+    cursor: pointer;
+    pointer-events: auto;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    transition-duration: 0.4s;
+}
+
+.canHit:hover {
+    background-color: #45a049;
+}
+
+.canHit:active {
+    background-color: #3e8e41;
+    box-shadow: 0 5px #666;
+    transform: translateY(4px);
+}
+
+.canNotHit{
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+#chip_image{
+    width: 100px;
+    height: 100px;
+
+}
+

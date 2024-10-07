@@ -30,7 +30,9 @@ function showDiv(divID) {
 }
 //hide a div given the div's ID
 function hideDiv(divID) {
-
+    var div = document.getElementById(divID);
+    if (div !== null)
+        div.style.display = "none";
 }
 
 //check if a class has a given class
@@ -47,6 +49,7 @@ function addClass(element, className) {
 //removeClass(element, className) – removes a given class from an element if the class has it. Does nothing otherwise.
 function removeClass(element, className) {
     if (element.classList)
+
         element.classList.remove(className);
 }
 
@@ -75,6 +78,8 @@ function showDealtCard(player, facedown, card){
 }
 
 function updateBet(bet){
+    let betDiv = document.getElementById("bet")
+    betDiv.innerText = "Bet: " + bet;
 
 }
 
@@ -84,6 +89,26 @@ function resetView(){
 
     playerHandDiv.innerHTML = '';
     dealerHandDiv.innerHTML = '';
+
+    removeClass(document.getElementById("hit"), "canNotHit");
+    addClass(document.getElementById("hit"), "canHit");
 }
+
+function updatePoints(points, player){
+    let pointsDiv = document.getElementById("points")
+    if(player === "player"){
+        pointsDiv.innerText = "Player: " + points;
+    }
+    else{
+        pointsDiv.innerText = "Dealer: " + points;
+    }
+}
+
+function switchToGameplay(){
+    window.location.href = "gameplay.html";
+}   
+
+
+
 
 
