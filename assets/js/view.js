@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////////
-//Author: Nnamdi Nwanze
+//Author: Ian Andler Pascual
 //Purpose: Controls the View of an MVC blackjack game
 /////////////////////////////////////////////////////////////////////////////////
 //view.js
@@ -9,8 +9,11 @@
 
 function addMessage(msg) {
     var messageDiv = document.getElementById("messagediv");
-    if (messageDiv !== null)
+    if (messageDiv !== null){
         messageDiv.innerHTML += msg+"<br>";
+
+    }
+       
     //scroll the message div to see new messages
     messageDiv.scrollTop = messageDiv.scrollHeight;
 }
@@ -77,12 +80,20 @@ function showDealtCard(player, facedown, card){
     }
 }
 
+//updates the bet div with the given bet
 function updateBet(bet){
-    let betDiv = document.getElementById("bet")
+    let betDiv = document.getElementById("betAmount")
     betDiv.innerText = "Bet: " + bet;
 
 }
 
+//updates the wallet div with the given wallet
+function updateWallet(wallet){
+    let walletDiv = document.getElementById("wallet")
+    walletDiv.innerText = "Wallet: " + wallet;
+}
+
+//resets the view to the initial state
 function resetView(){
     let playerHandDiv = document.getElementById("player_hand")
     let dealerHandDiv = document.getElementById("dealer_hand")
@@ -90,25 +101,79 @@ function resetView(){
     playerHandDiv.innerHTML = '';
     dealerHandDiv.innerHTML = '';
 
-    removeClass(document.getElementById("hit"), "canNotHit");
-    addClass(document.getElementById("hit"), "canHit");
+    resetButtons();
 }
 
+//updates the points div with the given points and player
 function updatePoints(points, player){
-    let pointsDiv = document.getElementById("points")
+    
     if(player === "player"){
+        let pointsDiv = document.getElementById("player_points")
         pointsDiv.innerText = "Player: " + points;
     }
     else{
+        let pointsDiv = document.getElementById("dealer_points")
         pointsDiv.innerText = "Dealer: " + points;
     }
 }
 
+//switches to the gameplay page
 function switchToGameplay(){
     window.location.href = "gameplay.html";
 }   
 
+//removes the canNotHit class from an element and adds the canHit class.
+function makeUnclickable(element){
+    if (hasClass(element, "canHit")){
+        addClass(element, "canNotHit");
+        removeClass(element, "canHit");
+    }
+}
+
+//removes the canHit class from an element and adds the canNotHit class.
+function makeClickable(element){
+    if (hasClass(element, "canNotHit")){
+        addClass(element, "canHit");
+        removeClass(element, "canNotHit");
+    }
+}
+
+    
+
+function revealDealer(){
+
+    let dealerHandDiv = document.getElementById("dealer_hand");
+    let flippedCard = dealerHandDiv.querySelector('#facedown');
+    
+    if (flippedCard) {
+        flippedCard.id = blackjack.dealer.cards[0].getName();
+    }
+    
+}
+
+function initializeButtons(){
+    addClass(document.getElementById("deal"), "canNotHit");
+    addClass(document.getElementById("hit"), "canNotHit");
+    addClass(document.getElementById("stand"), "canNotHit");
+    addClass(document.getElementById("increase_bet"), "canHit");
+    addClass(document.getElementById("decrease_bet"), "canNotHit");
+    addClass(document.getElementById("bet"), "canNotHit");
+    addClass(document.getElementById("reset"), "canNotHit");
+}
+
+function resetButtons(){
+    makeUnclickable(document.getElementById("deal"));
+    makeUnclickable(document.getElementById("hit"));
+    makeUnclickable(document.getElementById("stand"));
+    makeClickable(document.getElementById("increase_bet"));
+    makeUnclickable(document.getElementById("decrease_bet"));
+    makeUnclickable(document.getElementById("bet"));
+    makeUnclickable(document.getElementById("reset"));
+}
 
 
-
+function updateCardCounter(cardCount){
+    let cardCounter = document.getElementById("card_counter")
+    cardCounter.innerText = "Cards left: " + cardCount;
+}
 

@@ -1,11 +1,12 @@
 /////////////////////////////////////////////////////////////////////////////////
-//Author: Nnamdi Nwanze
+//Author: Ian Andler Pascual
 //Purpose: Sets up the Models of an MVC blackjack game
 /////////////////////////////////////////////////////////////////////////////////
 //models.js
 //setup variables for global use
 const suits = ["H","S","C","D"];	//allowable suits
 const maxCardsPerSuit = 13;		//max cards per suit
+const bustLimit = 21;
 
 //card object defining setters and getters
 var card = {
@@ -16,18 +17,20 @@ var card = {
     setRank: function (value) { this.rank = value; },
     //gets rank of card
     getRank: function () { return this.rank; },
-
+    //sets suit of card
     setSuit: function (value) { this.suit = value},
-
+    //gets suit of card 
     getSuit: function () {return this.suit},
-
+    //sets name of card
     setName: function(value){
         this.name = value;
     },
-
+    //gets name of card
     getName: function(){
         return this.name;
-    }
+    },
+
+    
 
 
 
@@ -51,7 +54,15 @@ var card_deck = {
 
                 //create a new card and give it the suit and card values
                 let newCard = Object.create(card);
-                newCard.setRank(i);
+                if(i === 1){
+                    newCard.setRank(11);
+                }
+                else if(i >= 11){
+                    newCard.setRank(10);
+                }
+                else{
+                    newCard.setRank(i);
+                }
                 newCard.setSuit(suit)
 
                 newCard.setName(suit + i);
@@ -69,23 +80,22 @@ var card_deck = {
     //randomly shuffle the deck
     shuffle: function(){
         for(i in this.deck){
-            const j = Math.floor(Math.random() * (this.standardDeckSize - 1 + 1));
+            const j = Math.floor(Math.random() * (this.cardsleft));
             [this.deck[i], this.deck[j]] = [this.deck[j], this.deck[i]];
         }
-
+        updateCardCounter(this.cardsleft);
 
     },
 
     discardCard: function(card){
         this.discard.push(card);
-    
     },
 
     discardShuffle: function(){
-        for(let card in this.discard){
-            this.discard.pop();
+        while(this.discard.length > 0){
+            let card = this.discard.pop();
             this.deck.push(card);
-            cardsleft += 1;
+            this.cardsleft += 1;
         }
         this.shuffle();
     },
@@ -94,8 +104,10 @@ var card_deck = {
         let topCard = this.deck.pop();
         this.cardsleft -= 1;
         if(this.cardsleft < 16){
-            this.discardshuffle();
+            this.discardShuffle();
         }
+
+        updateCardCounter(this.cardsleft);
         return topCard;
     },
 
@@ -105,19 +117,33 @@ var card_deck = {
 
 //object defining a players hand
 var hand = {
-    cards: null, //does not take any values in order to create seperate lists in memory
+    cards: [],
     score: 0,
+    aces: 0,
+
     initialize: function() {
         this.cards = [];
+        this.score = 0;
+        this.aces = 0;
     },
+
     addCard: function(card) {
         this.cards.push(card);
-        this.score += card.getRank();
-        
+        if(card.getRank() === 11){
+            this.aces += 1;
+        }
+        this.setScore(card.getRank());
     },
 
     setScore: function(value){
         this.score += value;
+        if(this.score > bustLimit){
+            while(this.score > bustLimit && this.aces > 0){
+                this.score -= 10;
+                this.aces -= 1;
+            }
+        }
+        console.log(this.score);
     },
 
     getScore: function(){
@@ -125,15 +151,11 @@ var hand = {
     },
 
     reset: function(){
-        let discarding = [];
-        console.log(discarding);
         while (this.cards.length > 0){
             blackjack.carddeck.discardCard(this.cards.pop());
-            
         }
-
         this.score = 0;
-        
+        this.aces = 0;
     },
 
 
@@ -146,22 +168,13 @@ var hand = {
 var wallet = {
     value: 0,
 
-    setValue: function(amount){
-        this.value = amount;
-    },
+    setValue: function(amount){this.value = amount;},
 
-    getValue: function(){
-        return this.value;
-    },
+    getValue: function(){return this.value;},
 
-    addValue: function(amount){
-        this.value += amount;
-        
-    },
+    addValue: function(amount){this.value += amount;},
 
-    decrementValue: function(amount){
-        this.value -= amount;
-    },
+    decrementValue: function(amount){this.value -= amount;},
 
 
 
@@ -179,12 +192,20 @@ var user = {
     },
 
     initialize: function(){
-        this.userWallet.value = 1000;
+        this.userWallet.setValue(1000);
+        this.userhand.initialize();
+        console.log(this.userWallet.getValue());
     },
 
+    resetBet: function(){
+        const startingPoint = 0;
+        this.userBet = startingPoint;
+    },
 
+    getBet: function(){
+        return this.userBet; // Add a getter for the bet
+    }
 };
-
 
 //blackjack game model
 var blackjack = {
@@ -195,81 +216,148 @@ var blackjack = {
     initialize: function () {
         this.carddeck.initialize();
         this.carddeck.shuffle();
-        this.dealer.initialize();
-        this.player.userhand.initialize();
+        this.player.initialize();
+        this.dealer.initialize(); 
+
+        //adds the bet to the bet section
+        updateBet(this.player.getBet());
+        //initializes the buttons
+        initializeButtons();
+        //updates the wallet on the game screen
+        updateWallet(this.player.userWallet.getValue());
+        
     },
 
     //hit using dealer, then player, then dealer, and then player again.
     deal: function(){
-        this.player.userhand.reset();
-        this.dealer.reset();
-        
 
-        this.hit('dealer');
-        this.hit('player');
-        this.hit('dealer');
-        this.hit('player');
-        
-    },
+        //disable the deal button
+        makeUnclickable(document.getElementById("deal"));
+        //enable the increase bet button
+        makeClickable(document.getElementById("hit"));
+        makeClickable(document.getElementById("stand"));
 
-    hit: function(who){
+        //deal 4 cards
+        for(let i = 0; i < 4; i++){
+            //deal to dealer if even, player if odd
+            if(i % 2 === 0){
+                this.dealerHit();
 
-        let card = this.carddeck.dealCard();
-
-        let cardName = card.getSuit() + card.getRank();
-
-        if(who === 'player'){
-                this.player.userhand.addCard(card);
-                
-                updatePoints(this.player.userhand.getScore(), "player")
-
-                let bust = this.didPlayerBust();
-                if(bust){
-                    showDealtCard('player', false, cardName)
-                    removeClass(document.getElementById("hit"), "canHit");
-                    addClass(document.getElementById("hit"), "canNotHit");
-                    
-                }
-                else{
-                    showDealtCard('player', false, cardName)
-                }
-
-        }
-        else{
-            let dealerscards = this.dealer.cards.length;
-            if(dealerscards === 0){
-                this.dealer.addCard(card);
-                showDealtCard('dealer', true, cardName)
-                updatePoints(this.dealer.getScore(), "dealer")
             }
             else{
-                this.dealer.addCard(card);
-                showDealtCard('dealer', false, cardName)
+                this.hit();
             }
-            
-        
         }
+
+        //add message to the game screen
+        addMessage("Place your bets!");
+
+        let dealerPoint = '?';
+        updatePoints(dealerPoint, "dealer");
         
+    },
+
+    //deal a card to the player
+    hit: function(){
+        //take a card from the deck 
+        let card = this.carddeck.dealCard();
+        //add it to the player's hand
+        this.player.userhand.addCard(card);
+        //update the points on the game screen
+        updatePoints(this.player.userhand.getScore(), "player")
+        //show the card on the game screen
+        showDealtCard('player', false, card.getName());
+
+        if(this.didPlayerBust()){
+           gamePlay.endRound();            
+        }
+        else if(this.didPlayerGetTwentyOne()){
+            makeUnclickable(document.getElementById("hit"));
+        }
 
     },
 
-    setBet: function(amount){
-        this.player.setUserBet(amount);
-    },
-    
-
-    didPlayerBust: function(){
-        if(this.player.userhand.getScore() > 21){
-            return true;
+    //deal a card to the dealer
+    dealerHit: function(){
+        //take a card from the deck 
+        let card = this.carddeck.dealCard();
+        //add it to the dealer's hand
+        this.dealer.addCard(card);
+        //show the card on the game screen
+        if(this.dealer.cards.length === 1){
+            //if it is the first card, show it face down
+            showDealtCard('dealer', true, card.getName());
         }
         else{
-            return false;
+            //if it is not the first card, show it face up
+            showDealtCard('dealer', false, card.getName());
         }
+
     },
 
+    //dealer stands, player can no longer hit
+    stand: function(){
+
+        //dealer limit is 17        
+        let dealerLimit = 17;
+
+        //dealer hits until the dealer limit is reached or the dealer busts
+        while(this.dealer.getScore() < dealerLimit){ 
+            this.dealerHit();
+            //show the points on the game screen
+        }
+
+        gamePlay.endRound();
+    
+
+    },
+
+    //set the bet to the amount bet
+    setBet: function(amount){
+        //sets the bet to the amount bet
+        this.player.setUserBet(amount);
+        //updates the bet on the webpage
+        updateBet(this.player.getBet());
+        //update the wallet on the game screen
+        updateWallet(this.player.userWallet.getValue());
+        //if the player's wallet is 0, disable the increase bet button
+        if(this.player.userWallet.getValue() <= 0){
+            //disable the increase bet button
+            makeUnclickable(document.getElementById("increase_bet"));
+        }
+        //if the player's bet is 0, disable the decrease bet button
+        else if(this.player.getBet() <= 0){
+            //disable the decrease bet button
+            makeUnclickable(document.getElementById("decrease_bet"));
+        }
+        //if the player's bet is not 0, ensure all buttons are clickable
+        else{
+            //if the player's bet is not 0, enable the decrease bet button
+            makeClickable(document.getElementById("decrease_bet"));
+            //enable the bet button
+            makeClickable(document.getElementById("bet"));
+            //enable the increase bet button
+            makeClickable(document.getElementById("increase_bet"));
+        }
+
+
+    },
+    
+    //check if the player busted
+    didPlayerBust: function(){
+        let busted = false;
+        //if the player's score is greater than 21, the player busted
+        if(this.player.userhand.getScore() > 21){
+            busted = true;
+        }
+        return busted
+    },
+
+    //check if the player got 21
     didPlayerGetTwentyOne: function(){
         let has21 = false;
-        if(this.player.getScore === 21){
+        //if the player's score is 21, the player got 21
+        if(this.player.userhand.getScore() === 21){
             has21 = true;
         }
         return has21;
@@ -281,17 +369,34 @@ var blackjack = {
         this.player.userhand.reset();
         this.dealer.reset();
 
-        updatePoints("", "player");
-        updatePoints("", "dealer");
 
-        console.log("Cards discarded:", this.carddeck.discard);
-    }
+    },
+
+    whoWon: function(){
+        if(this.player.userhand.getScore() > 21){
+            addMessage("Player Busted!");
+            return "Dealer";
+        }
+        else if(this.dealer.getScore() > 21){
+            addMessage("Dealer Busted!");
+            return "Player";
+        }
+        else if(this.player.userhand.getScore() > this.dealer.getScore()){
+            return "Player";
+        }
+        else if(this.player.userhand.getScore() < this.dealer.getScore()){
+            return "Dealer";
+        }
+        else{
+            return "Tie";
+        }
+
+    },
+
+
+    
 
     
 };
 
-
-window.blackjack = blackjack; 
-
-console.log("Blackjack object created and attached to window:", window.blackjack);
 
