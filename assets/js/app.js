@@ -10,6 +10,8 @@ var gamePlay = {
     playGame: function(){
 
         blackjack.initialize();
+
+
     },
 
     getUsername: function(){
@@ -88,7 +90,23 @@ var gamePlay = {
         //update the bet on the view
         updateBet(blackjack.player.getBet());
 
+        resetButtons();
+        resetView();
+
     },
+
+    hit: function(){
+        blackjack.hit();
+        
+    },
+
+    stand: function(){
+        blackjack.stand();
+    },
+
+    bet: function(){
+        blackjack.player.bet();
+    }
 
 
 };

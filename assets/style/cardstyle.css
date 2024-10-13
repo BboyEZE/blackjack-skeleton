@@ -83,6 +83,19 @@
     background-position: -990px -695px;
 }
 
+
+/**************FORM PAGE****************/
+#form{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 4vh;
+}
+
+
+
+
 #dealer {
  display: inline-block;
 }
@@ -182,7 +195,8 @@ body {
 
 header {
     text-align: center;
-    margin-bottom: 20px;
+    padding: 5px;
+    background-color: #bc9bff;
 }
 
 #game-area {
@@ -192,6 +206,9 @@ header {
 
 #game-board {
     background-color: #67c157;
+    border-radius: 15px; /* Add this line */
+    padding: 5px; /* Add this line */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Optional: adds a subtle shadow */
 }
 
 #left-column {

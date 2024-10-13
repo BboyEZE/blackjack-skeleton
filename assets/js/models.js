@@ -273,7 +273,7 @@ var blackjack = {
         }
         else if(this.didPlayerGetTwentyOne()){
             makeUnclickable(document.getElementById("hit"));
-        }
+        }ty
 
     },
 
