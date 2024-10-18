@@ -6,7 +6,13 @@
 //setup variables for global use
 const suits = ["H","S","C","D"];	//allowable suits
 const maxCardsPerSuit = 13;		//max cards per suit
+
+
 const bustLimit = 21;
+const aceValue = 11;
+
+const startingCash = 1000;
+
 
 //card object defining setters and getters
 var card = {
@@ -55,16 +61,19 @@ var card_deck = {
                 //create a new card and give it the suit and card values
                 let newCard = Object.create(card);
                 if(i === 1){
-                    newCard.setRank(11);
+                    newCard.setRank(aceValue);
                 }
+                //if the card is a face card, set the rank to 10
                 else if(i >= 11){
                     newCard.setRank(10);
                 }
+                //if the card is not a face card, set the rank to the card value
                 else{
                     newCard.setRank(i);
                 }
+                //set the suit of the card
                 newCard.setSuit(suit)
-
+                //set the name of the card
                 newCard.setName(suit + i);
                 
                 //put it into the deck
@@ -79,35 +88,53 @@ var card_deck = {
       },
     //randomly shuffle the deck
     shuffle: function(){
+        //shuffle the deck
         for(i in this.deck){
+            //get a random card from the deck
             const j = Math.floor(Math.random() * (this.cardsleft));
+            //swap the card with the current card
             [this.deck[i], this.deck[j]] = [this.deck[j], this.deck[i]];
         }
+        //update the card counter
         updateCardCounter(this.cardsleft);
 
     },
 
+    //discard a card to the discard pile
     discardCard: function(card){
+        //add the card to the discard pile
         this.discard.push(card);
     },
 
+    //shuffle the discard pile into the deck
     discardShuffle: function(){
+        //while there are cards in the discard pile
         while(this.discard.length > 0){
+            //get a card from the discard pile
             let card = this.discard.pop();
+            //add it to the deck
             this.deck.push(card);
+            //increment the card counter
             this.cardsleft += 1;
         }
+        //shuffle the deck
         this.shuffle();
     },
 
+    //deal a card from the deck
     dealCard: function(){
+        //get the top card from the deck
         let topCard = this.deck.pop();
+        //decrement the card counter
         this.cardsleft -= 1;
+        //if there are less than 16 cards in the deck, shuffle the discard pile into the deck
         if(this.cardsleft < 16){
             this.discardShuffle();
         }
 
+        //update the card counter
         updateCardCounter(this.cardsleft);
+        //return the top card
         return topCard;
     },
 
@@ -122,36 +149,52 @@ var hand = {
     aces: 0,
 
     initialize: function() {
+        //set the cards to an empty array with its own space in memory
         this.cards = [];
+        //set the score to 0
         this.score = 0;
+        //set the aces to 0
         this.aces = 0;
     },
 
+    //add a card to the hand
     addCard: function(card) {
+        //add the card to the hand
         this.cards.push(card);
-        if(card.getRank() === 11){
+        //if the card is an ace, increment the ace counter
+        if(card.getRank() === aceValue){
             this.aces += 1;
         }
+        //set the score of the hand
         this.setScore(card.getRank());
     },
 
+    //set the score of the hand
     setScore: function(value){
+        //add the card value to the score
         this.score += value;
+        //if the score is greater than the bust limit and there are aces in the hand, adjust the score
         if(this.score > bustLimit){
+            //while the score is greater than the bust limit and there are aces in the hand
             while(this.score > bustLimit && this.aces > 0){
+                //subtract 10 from the score and decrement the ace counter
                 this.score -= 10;
+                //decrement the ace counter
                 this.aces -= 1;
             }
         }
-        console.log(this.score);
     },
 
+    //get the score of the hand
     getScore: function(){
         return this.score;
     },
 
+    //reset the hand    
     reset: function(){
+        //while there are cards in the hand
         while (this.cards.length > 0){
+            //discard the card to the discard pile
             blackjack.carddeck.discardCard(this.cards.pop());
         }
         this.score = 0;
@@ -168,12 +211,13 @@ var hand = {
 var wallet = {
     value: 0,
 
+    //set the value of the wallet
     setValue: function(amount){this.value = amount;},
-
+    //get the value of the wallet
     getValue: function(){return this.value;},
-
+    //add a value to the wallet
     addValue: function(amount){this.value += amount;},
-
+    //decrement a value from the wallet
     decrementValue: function(amount){this.value -= amount;},
 
 
@@ -187,17 +231,22 @@ var user = {
     userWallet: Object.create(wallet),
 
     setUserBet: function(amount){
+        //add the bet to the user's bet
         this.userBet += amount;
+        //decrement the wallet by the amount bet
         this.userWallet.decrementValue(amount)
     },
 
     initialize: function(){
-        this.userWallet.setValue(1000);
+        //set the wallet to 1000
+        this.userWallet.setValue(startingCash);
+        //initialize the hand
         this.userhand.initialize();
-        console.log(this.userWallet.getValue());
     },
 
+    //reset the bet
     resetBet: function(){
+        //set the bet to 0
         const startingPoint = 0;
         this.userBet = startingPoint;
     },
@@ -268,12 +317,15 @@ var blackjack = {
         //show the card on the game screen
         showDealtCard('player', false, card.getName());
 
+        //check if the player busted
         if(this.didPlayerBust()){
+            //end the round
            gamePlay.endRound();            
         }
+        //check if the player got 21
         else if(this.didPlayerGetTwentyOne()){
             makeUnclickable(document.getElementById("hit"));
-        }ty
+        }
 
     },
 
@@ -307,6 +359,7 @@ var blackjack = {
             //show the points on the game screen
         }
 
+        //end the round
         gamePlay.endRound();
     
 
@@ -316,30 +369,10 @@ var blackjack = {
     setBet: function(amount){
         //sets the bet to the amount bet
         this.player.setUserBet(amount);
-        //updates the bet on the webpage
-        updateBet(this.player.getBet());
-        //update the wallet on the game screen
-        updateWallet(this.player.userWallet.getValue());
-        //if the player's wallet is 0, disable the increase bet button
-        if(this.player.userWallet.getValue() <= 0){
-            //disable the increase bet button
-            makeUnclickable(document.getElementById("increase_bet"));
-        }
-        //if the player's bet is 0, disable the decrease bet button
-        else if(this.player.getBet() <= 0){
-            //disable the decrease bet button
-            makeUnclickable(document.getElementById("decrease_bet"));
-        }
-        //if the player's bet is not 0, ensure all buttons are clickable
-        else{
-            //if the player's bet is not 0, enable the decrease bet button
-            makeClickable(document.getElementById("decrease_bet"));
-            //enable the bet button
-            makeClickable(document.getElementById("bet"));
-            //enable the increase bet button
-            makeClickable(document.getElementById("increase_bet"));
-        }
-
+        
+        //check the betting amount to the wallet and disable the buttons if necessary
+        gamePlay.checkBettingAmount();
+       
 
     },
     
@@ -347,9 +380,10 @@ var blackjack = {
     didPlayerBust: function(){
         let busted = false;
         //if the player's score is greater than 21, the player busted
-        if(this.player.userhand.getScore() > 21){
+        if(this.player.userhand.getScore() > bustLimit){
             busted = true;
         }
+        //return the busted status
         return busted
     },
 
@@ -364,37 +398,61 @@ var blackjack = {
 
     },
 
+    //reset the hands
     discardHands: function(){
-
+        //reset the player's hand
         this.player.userhand.reset();
+        //reset the dealer's hand
         this.dealer.reset();
 
 
     },
 
+    //determine who won the round
     whoWon: function(){
-        if(this.player.userhand.getScore() > 21){
-            addMessage("Player Busted!");
+        //if the player's score is greater than 21, the dealer won
+        if(this.player.userhand.getScore() > bustLimit){
+            
             return "Dealer";
         }
-        else if(this.dealer.getScore() > 21){
-            addMessage("Dealer Busted!");
+        //if the dealer's score is greater than 21, the player won
+        else if(this.dealer.getScore() > bustLimit){
+            
             return "Player";
         }
+        //if the player's score is greater than the dealer's score, the player won
         else if(this.player.userhand.getScore() > this.dealer.getScore()){
             return "Player";
         }
+        //if the dealer's score is greater than the player's score, the dealer won
         else if(this.player.userhand.getScore() < this.dealer.getScore()){
             return "Dealer";
         }
+        //if the scores are equal, it is a tie
         else{
             return "Tie";
         }
 
     },
 
+    reset: function(){
+        // Reset the player's wallet to the starting cash
+        this.player.userWallet.setValue(startingCash);
+        // Reset the player's bet to 0
+        this.player.resetBet();
 
-    
+        //update the bet and wallet
+        updateBet(blackjack.player.getBet());
+        updateWallet(blackjack.player.userWallet.getValue());
+
+        // Discard the hands to start fresh
+        this.discardHands();
+        // Reset the deck to its initial state
+        this.carddeck.discardShuffle();
+        
+    }
+
+
 
     
 };

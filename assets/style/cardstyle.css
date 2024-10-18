@@ -122,13 +122,19 @@
     flex-direction: row;
 }
 
+#new_round{
+    margin-top: 18px;
+}
+
+
+
 
 .canHit, .canNotHit {
     opacity: 1;
     cursor: pointer;
     pointer-events: auto;
-    background-color: #4CAF50;
     color: white;
+    background-color: #56a049;
     border: none;
     padding: 10px 20px;
     text-align: center;
@@ -139,12 +145,13 @@
     transition-duration: 0.4s;
 }
 
+
 .canHit:hover {
-    background-color: #45a049;
+    background-color: #369852;
 }
 
 .canHit:active {
-    background-color: #3e8e41;
+    background-color: #69e749;
     box-shadow: 0 5px #666;
     transform: translateY(4px);
 }
@@ -272,7 +279,7 @@ header {
     background-color: #f0f0f0;
     padding: 20px;
     border-radius: 5px;
-    min-height: 300px;
+    min-height: 200px;
     width: 100%;
 }
 
@@ -304,4 +311,5 @@ header {
     font-weight: bold;
     margin-top: 10px;
 }
+
 

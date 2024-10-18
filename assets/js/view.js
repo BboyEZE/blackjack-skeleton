@@ -64,10 +64,12 @@ function addUsername(username){
 }
 
 function showDealtCard(player, facedown, card){
+    //if the player is the player, add the card to the player's hand
     if(player === 'player'){
         let playerDiv = document.getElementById('player_hand');
         playerDiv.innerHTML += `<div class="card_deck" id = "${card}"><div>`
     }
+    //if the player is the dealer, add the card to the dealer's hand
     else{
         let playerDiv = document.getElementById('dealer_hand');
 
@@ -95,22 +97,35 @@ function updateWallet(wallet){
 
 //resets the view to the initial state
 function resetView(){
+
+    //reset the player's hand
     let playerHandDiv = document.getElementById("player_hand")
     let dealerHandDiv = document.getElementById("dealer_hand")
 
+    //reset the hands
     playerHandDiv.innerHTML = '';
     dealerHandDiv.innerHTML = '';
 
+    //reset the points
+    updatePoints("", "player");
+    updatePoints("", "dealer");
+
+    //reset the messages
+    clearMessages();
+
+    //reset the buttons
     resetButtons();
 }
 
 //updates the points div with the given points and player
 function updatePoints(points, player){
-    
+    //if the player is the player, update the player's points
     if(player === "player"){
+        //update the player's points
         let pointsDiv = document.getElementById("player_points")
         pointsDiv.innerText = "Player: " + points;
     }
+    //if the player is the dealer, update the dealer's points
     else{
         let pointsDiv = document.getElementById("dealer_points")
         pointsDiv.innerText = "Dealer: " + points;
@@ -119,12 +134,15 @@ function updatePoints(points, player){
 
 //switches to the gameplay page
 function switchToGameplay(){
+    //switch to the gameplay page
     window.location.href = "gameplay.html";
 }   
 
 //removes the canNotHit class from an element and adds the canHit class.
 function makeUnclickable(element){
+    //if the element has the canHit class, remove it and add the canNotHit class
     if (hasClass(element, "canHit")){
+        //remove the canHit class and add the canNotHit class
         addClass(element, "canNotHit");
         removeClass(element, "canHit");
     }
@@ -133,6 +151,7 @@ function makeUnclickable(element){
 //removes the canHit class from an element and adds the canNotHit class.
 function makeClickable(element){
     if (hasClass(element, "canNotHit")){
+        //if the element has the canNotHit class, remove it and add the canHit class
         addClass(element, "canHit");
         removeClass(element, "canNotHit");
     }
@@ -141,38 +160,46 @@ function makeClickable(element){
     
 
 function revealDealer(){
-
+    //get the dealer's hand
     let dealerHandDiv = document.getElementById("dealer_hand");
     let flippedCard = dealerHandDiv.querySelector('#facedown');
     
     if (flippedCard) {
+        //flip the card
         flippedCard.id = blackjack.dealer.cards[0].getName();
     }
     
 }
 
 function initializeButtons(){
+    //make the deal button unclickable
     addClass(document.getElementById("deal"), "canNotHit");
+    //make the hit button unclickable
     addClass(document.getElementById("hit"), "canNotHit");
+    //make the stand button unclickable
     addClass(document.getElementById("stand"), "canNotHit");
+    //make the increase bet button clickable
     addClass(document.getElementById("increase_bet"), "canHit");
+    //make the bet button unclickable
     addClass(document.getElementById("decrease_bet"), "canNotHit");
-    addClass(document.getElementById("bet"), "canNotHit");
-    addClass(document.getElementById("reset"), "canNotHit");
 }
 
 function resetButtons(){
+    //make the deal button unclickable
     makeUnclickable(document.getElementById("deal"));
+    //make the hit button unclickable
     makeUnclickable(document.getElementById("hit"));
+    //make the stand button unclickable
     makeUnclickable(document.getElementById("stand"));
+    //make the increase bet button clickable
     makeClickable(document.getElementById("increase_bet"));
+    //make the decrease bet button unclickable
     makeUnclickable(document.getElementById("decrease_bet"));
-    makeUnclickable(document.getElementById("bet"));
-    makeUnclickable(document.getElementById("reset"));
 }
 
 
 function updateCardCounter(cardCount){
+    //update the card counter
     let cardCounter = document.getElementById("card_counter")
     cardCounter.innerText = "Cards left: " + cardCount;
 }

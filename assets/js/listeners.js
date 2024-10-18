@@ -1,73 +1,67 @@
 //AUTHOR: IAN ANDLER PASCUAL
 //PURPOSE: CREATE LISTENERS FOR THE BLACKJACK GAME
 
+//const bet amount for the game
 const betAmount = 100;
 
 document.getElementById("reset").addEventListener("click", function() {
     // Reset the Game
     gamePlay.reset();
-    // Reset the view
 
     
 });
 
 
 document.getElementById("increase_bet").addEventListener("click", function() {
-    
     //increase the bet
-    gamePlay.bet(betAmount);
+    blackjack.setBet(betAmount);
 });
 
 document.getElementById("decrease_bet").addEventListener("click", function() {
     //decrease the bet
-    gamePlay.bet(-betAmount);
+    blackjack.setBet(-betAmount);
 });
 
-document.getElementById("bet").addEventListener("click", function() {
-    //place the bet
-    gamePlay.bet(betAmount);
-
-    addMessage(`Bet placed: ${blackjack.player.getBet()}`);
-    if (blackjack.player.userWallet.getValue() ===0){
-        addMessage("ALL IN!!!!!");
-    }
-    //disable the bet buttons
-    makeUnclickable(document.getElementById("bet"));
-    makeUnclickable(document.getElementById("increase_bet"));
-    makeUnclickable(document.getElementById("decrease_bet"));
-    //enable the stand and hit buttons
-    makeClickable(document.getElementById("deal"));
-});
 
 document.getElementById("hit").addEventListener("click", function() {
-    // Deal card to user
-    console.log("Hit button clicked");
-    blackjack.hit('player');
+    
+    //add message to the message div
     addMessage(`Player hit a card`);
+    console.log("Hit button clicked");
+    // Deal card to user
+    blackjack.hit('player');
+    
 
-    gamePlay.hit();
 
 });
 
 document.getElementById("stand").addEventListener("click", function() {
     addMessage(`Player stands`);
     //stand, then deal cards to the dealer
-    gamePlay.stand();
-    //check if the game is over
+    blackjack.stand();
     
 });
 
 document.getElementById("deal").addEventListener("click", function() {
     addMessage(`Dealer deals cards`);
+    gamePlay.bet();
     //deal cards to the player and the dealer
-    gamePlay.deal();
+    blackjack.deal();
     
+});
+
+document.getElementById("new_round").addEventListener("click", function() {
+    //start a new round
+    gamePlay.newRound();
 });
 
 
 window.addEventListener('load', function() {
+    //get the username
     let username = gamePlay.getUsername();
+    //add the username to the username div
     addUsername(username);
+    //add a message to the message div
     addMessage(`Welcome to Blackjack!`);
 });
 
