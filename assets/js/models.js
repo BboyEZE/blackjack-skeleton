@@ -280,11 +280,11 @@ var blackjack = {
     //hit using dealer, then player, then dealer, and then player again.
     deal: function(){
 
-        //disable the deal button
-        makeUnclickable(document.getElementById("deal"));
-        //enable the increase bet button
-        makeClickable(document.getElementById("hit"));
-        makeClickable(document.getElementById("stand"));
+        //clear the old cards off the screen
+        resetView();
+
+        //discard the cards from both hands.
+        this.discardHands();
 
         //deal 4 cards
         for(let i = 0; i < 4; i++){
@@ -297,9 +297,6 @@ var blackjack = {
                 this.hit();
             }
         }
-
-        //add message to the game screen
-        addMessage("Place your bets!");
 
         let dealerPoint = '?';
         updatePoints(dealerPoint, "dealer");

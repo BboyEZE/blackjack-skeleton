@@ -43,17 +43,22 @@ document.getElementById("stand").addEventListener("click", function() {
 });
 
 document.getElementById("deal").addEventListener("click", function() {
+
     addMessage(`Dealer deals cards`);
     gamePlay.bet();
     //deal cards to the player and the dealer
     blackjack.deal();
+    //enable the hit and stand buttons 
+    makeClickable(document.getElementById("hit"));
+    makeClickable(document.getElementById("stand"));
+    //disable the bet buttons
+    makeUnclickable(document.getElementById("increase_bet"));
+    makeUnclickable(document.getElementById("decrease_bet"));
+    //disable the deal button
+    makeUnclickable(document.getElementById("deal"));
     
 });
 
-document.getElementById("new_round").addEventListener("click", function() {
-    //start a new round
-    gamePlay.newRound();
-});
 
 
 window.addEventListener('load', function() {

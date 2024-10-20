@@ -119,9 +119,7 @@ var gamePlay = {
         if (blackjack.player.userWallet.getValue() ===0){
             addMessage("ALL IN!!!!!");
         }
-        //disable the bet buttons
-        makeUnclickable(document.getElementById("increase_bet"));
-        makeUnclickable(document.getElementById("decrease_bet"));
+        
     },
 
     checkBettingAmount: function(){
