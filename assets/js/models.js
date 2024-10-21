@@ -447,7 +447,106 @@ var blackjack = {
         // Reset the deck to its initial state
         this.carddeck.discardShuffle();
         
+    },
+
+    
+    //use advice from a remote server
+    useAdvice: function(advice){
+        //hit if advice is hit
+        if(advice === "Hit"){
+            addMessage("Advice is to hit!");
+            this.hit();
+        }
+        //stand if the advice is stay
+        else if(advice === "Stay"){
+            addMessage("Advice is to stay!");
+            this.stand();
+        }
+    },
+
+
+    getRemoteAdvice: function(reqeustType){
+        
+        //create a new request object for the remote server, using 
+        // XMLHttpRequest, fetch, or jQuery as specified in the requestType parameter.
+        // Using the data from player and dealer hand.
+        const myURL = `https://convers-e.com/blackjackadvice.php?userscore=${this.player.userhand.getScore()}&dealerscore=${this.dealer.cards[1].getRank()}`;
+
+        if(reqeustType === "xhr"){
+            console.log("xhr request");
+            
+            const xhr = new XMLHttpRequest();
+            xhr.open("GET", myURL);
+            
+            xhr.onreadystatechange = () => {
+                if(xhr.readyState === 4 && xhr.status === 200){
+                    const myData = JSON.parse(xhr.responseText);
+                    console.log(myData);
+                    console.log(myData.content.Advice);
+                    
+                    let advice = String(myData.content.Advice);
+
+                    this.useAdvice(advice);
+                    
+                }
+                else if(xhr.readyState === 4){
+                    addMessage("Failed to get remote advice, try again or something else...");
+                }
+            }
+            
+            xhr.send(); 
+        
+        }
+        else if(reqeustType === "fetch"){
+
+            const myFetchParams = {
+                method: 'POST',
+                mode: 'cors',
+                referrerPolicy: 'origin',
+                cache: 'default'
+            };
+
+            console.log("fetch request");
+
+            let myFetchRequestURL = new Request(myURL);
+
+	        fetch(myFetchRequestURL,myFetchParams)
+	        .then(response => {
+	            return response.json();
+	            })
+	        .then(data => {   
+                let advice = String(data.content.Advice);
+                this.useAdvice(advice);
+	        })
+	        .catch(err => {
+	            addMessage("Failed to get remote advice, try again or something else...");
+	        });
+        }
+        else if(reqeustType === "jquery"){
+            console.log("jquery request");
+        }
+        else{
+            console.error("Invalid request type");
+        }
+
+        
+
+        
+        
+        
+    },
+
+
+    //check if the request is good
+    isRequestGood: function(status){
+        if(returnValue === 200){
+            return true;
+        }
+        else{
+            return false;
+        }
     }
+
 
 
 

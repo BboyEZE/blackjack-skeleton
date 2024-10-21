@@ -109,8 +109,6 @@ var gamePlay = {
         resetView();
         //reset the bet on the view
         resetButtons();
-        //clear the messages on the view
-        clearMessages();
 
     },
 
