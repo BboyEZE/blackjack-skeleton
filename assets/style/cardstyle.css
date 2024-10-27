@@ -1,3 +1,22 @@
+/*********************GOOGLE FONT*************************/
+
+.oxanium-fontify {
+    font-family: "Oxanium", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 300;
+    font-style: normal;
+  }
+
+body {
+    font-family: 'Oxanium', sans-serif;
+    margin: 0;
+    padding: 0;
+}
+  
+
+
+
+
 /*card deck image modified from https://www.vector4free.com*/
 .card_deck {
     background: url("../img/carddeck.png");
@@ -188,11 +207,7 @@
     margin-right: 10px;
 }
 
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-}
+
 
 #wrapper {
     max-width: 1200px;
@@ -311,5 +326,4 @@ header {
     font-weight: bold;
     margin-top: 10px;
 }
-
 

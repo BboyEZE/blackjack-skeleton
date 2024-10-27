@@ -129,6 +129,7 @@ var card_deck = {
         this.cardsleft -= 1;
         //if there are less than 16 cards in the deck, shuffle the discard pile into the deck
         if(this.cardsleft < 16){
+            addMessage("Less than 16 cards left. Shuffling discard pile...");
             this.discardShuffle();
         }
 
@@ -524,6 +525,13 @@ var blackjack = {
         }
         else if(reqeustType === "jquery"){
             console.log("jquery request");
+            $.getJSON(myURL, data => {
+                let advice = String(data.content.Advice);
+                this.useAdvice(advice);
+            })
+            .fail(err => {
+                addMessage("Failed to get remote advice, try again or something else...");
+            });
         }
         else{
             console.error("Invalid request type");
