@@ -471,8 +471,10 @@ var blackjack = {
         //create a new request object for the remote server, using 
         // XMLHttpRequest, fetch, or jQuery as specified in the requestType parameter.
         // Using the data from player and dealer hand.
-        const myURL = `https://convers-e.com/blackjackadvice.php?userscore=${this.player.userhand.getScore()}&dealerscore=${this.dealer.cards[1].getRank()}`;
+        const myURL = `http://127.0.0.1:3000/?userscore=${this.player.userhand.getScore()}&dealerscore=${this.dealer.cards[1].getRank()}`;
 
+
+        console.log(myURL);
         if(reqeustType === "xhr"){
             console.log("xhr request");
             
@@ -496,42 +498,6 @@ var blackjack = {
             }
             
             xhr.send(); 
-        
-        }
-        else if(reqeustType === "fetch"){
-
-            const myFetchParams = {
-                method: 'POST',
-                mode: 'cors',
-                referrerPolicy: 'origin',
-                cache: 'default'
-            };
-
-            console.log("fetch request");
-
-            let myFetchRequestURL = new Request(myURL);
-
-	        fetch(myFetchRequestURL,myFetchParams)
-	        .then(response => {
-	            return response.json();
-	            })
-	        .then(data => {   
-                let advice = String(data.content.Advice);
-                this.useAdvice(advice);
-	        })
-	        .catch(err => {
-	            addMessage("Failed to get remote advice, try again or something else...");
-	        });
-        }
-        else if(reqeustType === "jquery"){
-            console.log("jquery request");
-            $.getJSON(myURL, data => {
-                let advice = String(data.content.Advice);
-                this.useAdvice(advice);
-            })
-            .fail(err => {
-                addMessage("Failed to get remote advice, try again or something else...");
-            });
         }
         else{
             console.error("Invalid request type");

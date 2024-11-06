@@ -63,8 +63,6 @@ document.getElementById("deal").addEventListener("click", function() {
 
     //enable the AJAX request buttons
     makeClickable(document.getElementById("xhr"));
-    makeClickable(document.getElementById("fetch"));
-    makeClickable(document.getElementById("jquery"));
 
     //disable the bet buttons
     makeUnclickable(document.getElementById("increase_bet"));
@@ -82,15 +80,6 @@ document.getElementById("xhr").addEventListener("click", function() {
     blackjack.getRemoteAdvice("xhr");
 });
 
-document.getElementById("fetch").addEventListener("click", function() {
-    clearMessages();
-    blackjack.getRemoteAdvice("fetch");
-});
-
-document.getElementById("jquery").addEventListener("click", function() {
-    clearMessages();
-    blackjack.getRemoteAdvice("jquery");
-});
 
 
 

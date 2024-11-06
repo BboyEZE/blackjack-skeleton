@@ -150,7 +150,23 @@ var gamePlay = {
         //update the wallet on the view
         updateWallet(currentWallet);
         
-    }
+    },
+
+    reportOutcome: function(outcome) {
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', `http://127.0.0.1:3000/?outcome=${outcome}`, true);
+        xhr.onload = function() {
+          if (xhr.status === 200) {
+            const result = JSON.parse(xhr.responseText);
+            // Display the updated stats (wins, losses, pushes) in the message div
+            const messageDiv = document.getElementById('message');
+            messageDiv.innerHTML = `Wins: ${result.content.wins}, Losses: ${result.content.losses}, Pushes: ${result.content.pushes}`;
+          } else {
+            console.error('Error reporting outcome');
+          }
+        };
+        xhr.send();
+      }
 
 };
 

@@ -185,8 +185,6 @@ function initializeButtons(){
 
     //make the AJAX request buttons unclickable
     addClass(document.getElementById("xhr"), "canNotHit");
-    addClass(document.getElementById("fetch"), "canNotHit");
-    addClass(document.getElementById("jquery"), "canNotHit");
 }
 
 function resetButtons(){
@@ -203,8 +201,6 @@ function resetButtons(){
 
     //make the AJAX request buttons unclickable
     makeUnclickable(document.getElementById("xhr"));
-    makeUnclickable(document.getElementById("fetch"));
-    makeUnclickable(document.getElementById("jquery"));
 }
 
 
