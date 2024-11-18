@@ -11,6 +11,7 @@ document.getElementById("reset").addEventListener("click", function() {
     // Reset the Game
     gamePlay.reset();
     addMessage("Reseting the Game...");
+    gamePlay.reportOutcome("reset");
 
 
     

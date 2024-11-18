@@ -275,6 +275,10 @@ var blackjack = {
         initializeButtons();
         //updates the wallet on the game screen
         updateWallet(this.player.userWallet.getValue());
+
+        gamePlay.reportOutcome("reset");
+
+        
         
     },
 
@@ -447,6 +451,7 @@ var blackjack = {
         this.discardHands();
         // Reset the deck to its initial state
         this.carddeck.discardShuffle();
+
         
     },
 
@@ -520,6 +525,8 @@ var blackjack = {
             return false;
         }
     }
+
+    
 
 
 
