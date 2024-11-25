@@ -76,10 +76,7 @@ document.getElementById("deal").addEventListener("click", function() {
     
 });
 
-document.getElementById("xhr").addEventListener("click", function() {
-    clearMessages();
-    blackjack.getRemoteAdvice("xhr");
-});
+
 
 
 

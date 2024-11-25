@@ -456,21 +456,9 @@ var blackjack = {
     },
 
     
-    //use advice from a remote server
-    useAdvice: function(advice){
-        //hit if advice is hit
-        if(advice === "Hit"){
-            addMessage("Advice is to hit!");
-            this.hit();
-        }
-        //stand if the advice is stay
-        else if(advice === "Stay"){
-            addMessage("Advice is to stay!");
-            this.stand();
-        }
-    },
-
-
+ 
+//saving this code as comments so i can borrow from it
+/*
     getRemoteAdvice: function(reqeustType){
         
         //create a new request object for the remote server, using 
@@ -526,7 +514,7 @@ var blackjack = {
         }
     }
 
-    
+    */
 
 
 
