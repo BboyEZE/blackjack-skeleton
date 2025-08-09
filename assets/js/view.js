@@ -182,6 +182,9 @@ function initializeButtons(){
     addClass(document.getElementById("increase_bet"), "canHit");
     //make the bet button unclickable
     addClass(document.getElementById("decrease_bet"), "canNotHit");
+
+    //make the AJAX request buttons unclickable
+    addClass(document.getElementById("xhr"), "canNotHit");
 }
 
 function resetButtons(){
@@ -195,6 +198,9 @@ function resetButtons(){
     makeClickable(document.getElementById("increase_bet"));
     //make the decrease bet button unclickable
     makeUnclickable(document.getElementById("decrease_bet"));
+
+    //make the AJAX request buttons unclickable
+    makeUnclickable(document.getElementById("xhr"));
 }
 
 

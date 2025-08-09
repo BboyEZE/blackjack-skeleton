@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////////
-//Author: Nnamdi Nwanze
+//Author: Ian Andler Pascual
 //Purpose: Create a blackjack game using objects and an MVC design
 /////////////////////////////////////////////////////////////////////////////////
 //app.js
@@ -43,25 +43,32 @@ var gamePlay = {
         if (blackjack.player.userhand.getScore() > bustLimit){
             //player busts
             addMessage("Player busts!");
+            this.reportOutcome("loss");
         }
         else if (blackjack.dealer.getScore() > bustLimit){
             //dealer busts
             addMessage("Dealer busts!");
+            this.reportOutcome("won");
             this.updateWinnings();
 
          } //dealer wins
         else if (winner === "Player"){ //player wins
             //update the view to display the winner
             addMessage("Player wins!");
+            this.reportOutcome("won");
             this.updateWinnings();
         }
 
         else if(winner === "Dealer"){ //dealer wins
             //update the view to display the winner
             addMessage("Dealer wins!");
+            this.reportOutcome("loss");
             
         }
-        else{addMessage("Ties go to the house :(")} //ties go to the house
+        else{
+            addMessage("Ties go to the house :(")
+            this.reportOutcome("draw");
+        } //ties go to the house
 
         //reset the bet
         blackjack.player.resetBet();
@@ -109,8 +116,6 @@ var gamePlay = {
         resetView();
         //reset the bet on the view
         resetButtons();
-        //clear the messages on the view
-        clearMessages();
 
     },
 
@@ -119,9 +124,7 @@ var gamePlay = {
         if (blackjack.player.userWallet.getValue() ===0){
             addMessage("ALL IN!!!!!");
         }
-        //disable the bet buttons
-        makeUnclickable(document.getElementById("increase_bet"));
-        makeUnclickable(document.getElementById("decrease_bet"));
+        
     },
 
     checkBettingAmount: function(){
@@ -154,6 +157,41 @@ var gamePlay = {
         //update the wallet on the view
         updateWallet(currentWallet);
         
+    },
+
+    //report the outcome of the game
+
+    reportOutcome: function(outcome) {
+        // Construct the URL to send to the server
+        // outcome is either "won", "loss", "draw", or "reset"
+        // reset is used to reset the game score back to 0-0-0
+        let myURL;
+        if (outcome === "won" || outcome === "loss" || outcome === "draw") {
+            myURL = `http://127.0.0.1:3000/?outcome=${outcome}`;
+        } else if (outcome === "reset") {
+            myURL = `http://127.0.0.1:3000/?reset=true`;
+        }
+    
+        // Create a new XMLHttpRequest object
+        const xhr = new XMLHttpRequest();
+        
+        // Initialize the request
+        xhr.open("GET", myURL, true);  // "true" ensures it's asynchronous
+        xhr.onreadystatechange = () => {
+            if(xhr.readyState === 4 && xhr.status === 200){
+                //make the response text a JSON object
+                const myData = JSON.parse(xhr.responseText);
+                //add the message to the view
+                addMessage(`Win/Loss Ratio: wins:${myData.content.win}, loss:${myData.content.loss}, draw:${myData.content.draw}`);
+                
+            }
+            else if(xhr.readyState === 4){
+                console.log("Failed to get the win/loss ratio");
+            }
+        }
+    
+        // Send the request asynchronously
+        xhr.send();
     }
 
 };

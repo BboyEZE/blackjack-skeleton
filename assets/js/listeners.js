@@ -5,8 +5,14 @@
 const betAmount = 100;
 
 document.getElementById("reset").addEventListener("click", function() {
+    clearMessages();
+
+    
     // Reset the Game
     gamePlay.reset();
+    addMessage("Reseting the Game...");
+    gamePlay.reportOutcome("reset");
+
 
     
 });
@@ -24,10 +30,10 @@ document.getElementById("decrease_bet").addEventListener("click", function() {
 
 
 document.getElementById("hit").addEventListener("click", function() {
+    clearMessages();
     
-    //add message to the message div
+    //add a hit message 
     addMessage(`Player hit a card`);
-    console.log("Hit button clicked");
     // Deal card to user
     blackjack.hit('player');
     
@@ -36,6 +42,8 @@ document.getElementById("hit").addEventListener("click", function() {
 });
 
 document.getElementById("stand").addEventListener("click", function() {
+    clearMessages();
+
     addMessage(`Player stands`);
     //stand, then deal cards to the dealer
     blackjack.stand();
@@ -43,17 +51,34 @@ document.getElementById("stand").addEventListener("click", function() {
 });
 
 document.getElementById("deal").addEventListener("click", function() {
-    addMessage(`Dealer deals cards`);
+    clearMessages();
+
     gamePlay.bet();
+
     //deal cards to the player and the dealer
     blackjack.deal();
+
+    //enable the hit and stand buttons 
+    makeClickable(document.getElementById("hit"));
+    makeClickable(document.getElementById("stand"));
+
+    //enable the AJAX request buttons
+    makeClickable(document.getElementById("xhr"));
+
+    //disable the bet buttons
+    makeUnclickable(document.getElementById("increase_bet"));
+    makeUnclickable(document.getElementById("decrease_bet"));
+
+    //disable the deal button
+    makeUnclickable(document.getElementById("deal"));
+
+    addMessage(`Dealer deals cards`);
     
 });
 
-document.getElementById("new_round").addEventListener("click", function() {
-    //start a new round
-    gamePlay.newRound();
-});
+
+
+
 
 
 window.addEventListener('load', function() {

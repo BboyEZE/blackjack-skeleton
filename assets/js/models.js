@@ -129,6 +129,7 @@ var card_deck = {
         this.cardsleft -= 1;
         //if there are less than 16 cards in the deck, shuffle the discard pile into the deck
         if(this.cardsleft < 16){
+            addMessage("Less than 16 cards left. Shuffling discard pile...");
             this.discardShuffle();
         }
 
@@ -274,17 +275,21 @@ var blackjack = {
         initializeButtons();
         //updates the wallet on the game screen
         updateWallet(this.player.userWallet.getValue());
+
+        gamePlay.reportOutcome("reset");
+
+        
         
     },
 
     //hit using dealer, then player, then dealer, and then player again.
     deal: function(){
 
-        //disable the deal button
-        makeUnclickable(document.getElementById("deal"));
-        //enable the increase bet button
-        makeClickable(document.getElementById("hit"));
-        makeClickable(document.getElementById("stand"));
+        //clear the old cards off the screen
+        resetView();
+
+        //discard the cards from both hands.
+        this.discardHands();
 
         //deal 4 cards
         for(let i = 0; i < 4; i++){
@@ -297,9 +302,6 @@ var blackjack = {
                 this.hit();
             }
         }
-
-        //add message to the game screen
-        addMessage("Place your bets!");
 
         let dealerPoint = '?';
         updatePoints(dealerPoint, "dealer");
@@ -449,8 +451,71 @@ var blackjack = {
         this.discardHands();
         // Reset the deck to its initial state
         this.carddeck.discardShuffle();
+
         
+    },
+
+    
+ 
+//saving this code as comments so i can borrow from it
+/*
+    getRemoteAdvice: function(reqeustType){
+        
+        //create a new request object for the remote server, using 
+        // XMLHttpRequest, fetch, or jQuery as specified in the requestType parameter.
+        // Using the data from player and dealer hand.
+        const myURL = `http://127.0.0.1:3000/?userscore=${this.player.userhand.getScore()}&dealerscore=${this.dealer.cards[1].getRank()}`;
+
+
+        console.log(myURL);
+        if(reqeustType === "xhr"){
+            console.log("xhr request");
+            
+            const xhr = new XMLHttpRequest();
+            xhr.open("GET", myURL);
+            
+            xhr.onreadystatechange = () => {
+                if(xhr.readyState === 4 && xhr.status === 200){
+                    const myData = JSON.parse(xhr.responseText);
+                    console.log(myData);
+                    console.log(myData.content.Advice);
+                    
+                    let advice = String(myData.content.Advice);
+
+                    this.useAdvice(advice);
+                    
+                }
+                else if(xhr.readyState === 4){
+                    addMessage("Failed to get remote advice, try again or something else...");
+                }
+            }
+            
+            xhr.send(); 
+        }
+        else{
+            console.error("Invalid request type");
+        }
+
+        
+
+        
+        
+        
+    },
+
+
+    //check if the request is good
+    isRequestGood: function(status){
+        if(returnValue === 200){
+            return true;
+        }
+        else{
+            return false;
+        }
     }
+
+    */
+
 
 
 
