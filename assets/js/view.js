@@ -6,12 +6,10 @@
 //addMessage(msg) – adds a given text (msg) to the message div.
 
 
-
 function addMessage(msg) {
     var messageDiv = document.getElementById("messagediv");
     if (messageDiv !== null){
         messageDiv.innerHTML += msg+"<br>";
-
     }
        
     //scroll the message div to see new messages
@@ -56,30 +54,50 @@ function removeClass(element, className) {
         element.classList.remove(className);
 }
 
-function addUsername(username){
-    var usernameDiv = document.getElementById("username")
-    if (usernameDiv){
-        usernameDiv.innerText = username;
+// Function to update player name in the UI
+function updatePlayerName(type, name) {
+    console.log(`Attempting to update ${type} name to ${name}`); // Debug log
+    const usernameElement = document.getElementById(`${type}-username`);
+    if (usernameElement) {
+        usernameElement.innerText = `${name}'s Hand`;
+        console.log(`Successfully updated ${type} username element`); // Debug log
+    } else {
+        console.log(`Could not find element with id: ${type}-username`); // Debug log
     }
 }
 
-function showDealtCard(player, facedown, card){
-    //if the player is the player, add the card to the player's hand
-    if(player === 'player'){
-        let playerDiv = document.getElementById('player_hand');
-        playerDiv.innerHTML += `<div class="card_deck" id = "${card}"><div>`
-    }
-    //if the player is the dealer, add the card to the dealer's hand
-    else{
-        let playerDiv = document.getElementById('dealer_hand');
 
-        if(facedown){
-            playerDiv.innerHTML += `<div class="card_deck" id = "facedown"><div>`
-        }
-        else{
-            playerDiv.innerHTML += `<div class="card_deck" id = "${card}"><div>`
-        }
+
+function showDealtCard(target, facedown, card) {
+    let targetDiv;
+    
+    // Debug logging
+    console.log(`Attempting to show card: ${card} for ${target}`);
+    
+    switch(target) {
+        case thisPlayer:
+            targetDiv = document.getElementById(`${thisPlayer}_hand`);
+            break;
+        case otherPlayer:
+            targetDiv = document.getElementById(`${otherPlayer}_hand`);
+            break;
+        case 'dealer':
+            targetDiv = document.getElementById('dealer_hand');
+            break;
+        default:
+            console.error('Invalid target for card:', target);
+            return;
     }
+
+    if (!targetDiv) {
+        console.error(`Target div not found for ${target}`);
+        return;
+    }
+
+    const cardDiv = document.createElement('div');
+    cardDiv.className = 'card_deck';
+    cardDiv.id = facedown ? 'facedown' : card;
+    targetDiv.appendChild(cardDiv);
 }
 
 //updates the bet div with the given bet
@@ -96,39 +114,37 @@ function updateWallet(wallet){
 }
 
 //resets the view to the initial state
-function resetView(){
+function resetView() {
+    const player1HandDiv = document.getElementById("player1_hand");
+    const player2HandDiv = document.getElementById("player2_hand");
+    const dealerHandDiv = document.getElementById("dealer_hand");
 
-    //reset the player's hand
-    let playerHandDiv = document.getElementById("player_hand")
-    let dealerHandDiv = document.getElementById("dealer_hand")
+    if (player1HandDiv) player1HandDiv.innerHTML = '';
+    if (player2HandDiv) player2HandDiv.innerHTML = '';
+    if (dealerHandDiv) dealerHandDiv.innerHTML = '';
 
-    //reset the hands
-    playerHandDiv.innerHTML = '';
-    dealerHandDiv.innerHTML = '';
+    // Reset points
+    const player1Points = document.getElementById("player1_points");
+    const player2Points = document.getElementById("player2_points");
+    const dealerPoints = document.getElementById("dealer_points");
+    
+    if (player1Points) player1Points.textContent = "";
+    if (player2Points) player2Points.textContent = "";
+    if (dealerPoints) dealerPoints.textContent = "";
 
-    //reset the points
-    updatePoints("", "player");
-    updatePoints("", "dealer");
-
-    //reset the messages
     clearMessages();
-
-    //reset the buttons
-    resetButtons();
 }
 
 //updates the points div with the given points and player
-function updatePoints(points, player){
-    //if the player is the player, update the player's points
-    if(player === "player"){
-        //update the player's points
-        let pointsDiv = document.getElementById("player_points")
-        pointsDiv.innerText = "Player: " + points;
-    }
-    //if the player is the dealer, update the dealer's points
-    else{
-        let pointsDiv = document.getElementById("dealer_points")
-        pointsDiv.innerText = "Dealer: " + points;
+function updatePoints(points, target) {
+    const pointsDiv = document.getElementById(`${target}_points`);
+    if (pointsDiv) {
+        // Show '?' for dealer's points until game is over
+        if (target === 'dealer' && document.querySelector('#dealer_hand #facedown')) {
+            pointsDiv.textContent = `Dealer: ?`;
+        } else {
+            pointsDiv.textContent = `${target.charAt(0).toUpperCase() + target.slice(1)}: ${points}`;
+        }
     }
 }
 
@@ -139,21 +155,18 @@ function switchToGameplay(){
 }   
 
 //removes the canNotHit class from an element and adds the canHit class.
-function makeUnclickable(element){
-    //if the element has the canHit class, remove it and add the canNotHit class
-    if (hasClass(element, "canHit")){
-        //remove the canHit class and add the canNotHit class
-        addClass(element, "canNotHit");
+function makeUnclickable(element) {
+    if (element) {
         removeClass(element, "canHit");
+        addClass(element, "canNotHit");
     }
 }
 
 //removes the canHit class from an element and adds the canNotHit class.
-function makeClickable(element){
-    if (hasClass(element, "canNotHit")){
-        //if the element has the canNotHit class, remove it and add the canHit class
-        addClass(element, "canHit");
+function makeClickable(element) {
+    if (element) {
         removeClass(element, "canNotHit");
+        addClass(element, "canHit");
     }
 }
 
@@ -167,6 +180,8 @@ function revealDealer(){
     if (flippedCard) {
         //flip the card
         flippedCard.id = blackjack.dealer.cards[0].getName();
+        // Update dealer's points when cards are revealed
+        updatePoints(blackjack.dealer.getScore(), "dealer");
     }
     
 }
@@ -183,8 +198,7 @@ function initializeButtons(){
     //make the bet button unclickable
     addClass(document.getElementById("decrease_bet"), "canNotHit");
 
-    //make the AJAX request buttons unclickable
-    addClass(document.getElementById("xhr"), "canNotHit");
+
 }
 
 function resetButtons(){
@@ -199,14 +213,38 @@ function resetButtons(){
     //make the decrease bet button unclickable
     makeUnclickable(document.getElementById("decrease_bet"));
 
-    //make the AJAX request buttons unclickable
-    makeUnclickable(document.getElementById("xhr"));
+
 }
 
 
-function updateCardCounter(cardCount){
-    //update the card counter
-    let cardCounter = document.getElementById("card_counter")
-    cardCounter.innerText = "Cards left: " + cardCount;
+function updateCardCounter(count) {
+    const counter = document.getElementById('card_counter');
+    if (counter) {
+        counter.textContent = `Cards left: ${count}`;
+    }
 }
+
+function updateView(type, data) {
+    switch(type) {
+        case 'username':
+            const { playerType, username } = data;
+            const usernameElement = document.getElementById(`${playerType}-username`);
+            if (usernameElement) {
+                usernameElement.textContent = `${username}'s Hand`;
+            }
+            break;
+    }
+}
+
+function clearHands(){
+    document.getElementById('player1_hand').innerHTML = '';
+    document.getElementById('player2_hand').innerHTML = '';
+    document.getElementById('dealer_hand').innerHTML = '';
+}
+
+function clearOtherPlayer(){
+    document.getElementById(`${otherPlayer}_hand`).innerHTML = '';
+    document.getElementById(`${otherPlayer}_points`).innerHTML = '';
+}
+
 

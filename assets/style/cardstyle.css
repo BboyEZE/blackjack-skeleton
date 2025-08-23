@@ -18,6 +18,7 @@ body {
 
 
 /*card deck image modified from https://www.vector4free.com*/
+/*card deck image modified from https://www.vector4free.com*/
 .card_deck {
     background: url("../img/carddeck.png");
     display: inline-block;
@@ -102,18 +103,54 @@ body {
     background-position: -990px -695px;
 }
 
-
 /**************FORM PAGE****************/
-#form{
+#form {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 4vh;
+    background-color: #67c157;  /* Match game board color */
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 300px;
+    margin: 20px auto;
 }
 
+#username {
+    width: 80%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 2px solid #56a049;
+    border-radius: 5px;
+    font-family: 'Oxanium', sans-serif;
+    font-size: 16px;
+}
 
+#register-btn {
+    width: 85%;
+    margin-top: 15px;
+}
 
+/* Style for the registration page wrapper */
+body:has(#form) #wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 80vh;
+    background-color: #f0f0f0;
+}
+
+/* Style for the registration page */
+body:has(#form) #wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 80vh;
+    background-color: #f0f0f0;
+}
 
 #dealer {
  display: inline-block;
@@ -325,5 +362,66 @@ header {
     font-size: 18px;
     font-weight: bold;
     margin-top: 10px;
+}
+
+#highscores {
+    margin-top: 2rem;
+    background-color: #67c157;
+    padding: 1rem;
+    border-radius: 15px;
+    width: 300px;
+}
+
+#highscores h2 {
+    color: white;
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+#highscores table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 5px;
+}
+
+#highscores th, #highscores td {
+    padding: 0.5rem;
+    text-align: center;
+    border: 1px solid #56a049;
+}
+
+#highscores th {
+    background-color: #56a049;
+    color: white;
+}
+
+#highscores tr:nth-child(even) {
+    background-color: rgba(255, 255, 255, 0.7);
+}
+
+.player-section {
+    margin: 20px 0;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.player-section.inactive {
+    opacity: 0.5;
+}
+
+#player1-section {
+    border-bottom: 2px solid #007bff;
+}
+
+#player2-section {
+    border-bottom: 2px solid #28a745;
+}
+
+.waiting-message {
+    text-align: center;
+    color: #666;
+    font-style: italic;
+    margin: 20px 0;
 }
 
