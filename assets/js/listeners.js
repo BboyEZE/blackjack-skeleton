@@ -1,94 +1,117 @@
 //AUTHOR: IAN ANDLER PASCUAL
 //PURPOSE: CREATE LISTENERS FOR THE BLACKJACK GAME
 
-//const bet amount for the game
 const betAmount = 100;
 
-document.getElementById("reset").addEventListener("click", function() {
-    clearMessages();
+document.addEventListener('DOMContentLoaded', function() {
+    // Register button listener
+    const registerBtn = document.getElementById('register-btn');
+    if (registerBtn) {
+        registerBtn.addEventListener('click', handleRegistration);
+    }
 
-    
-    // Reset the Game
+    // Only add game-related listeners if we're on the gameplay page
+    if (window.location.pathname.includes('gameplay.html')) {
+        const resetBtn = document.getElementById("reset");
+        if (resetBtn) {
+            resetBtn.addEventListener("click", handleReset);
+        }
+
+        const increaseBetBtn = document.getElementById("increase_bet");
+        if (increaseBetBtn) {
+            increaseBetBtn.addEventListener("click", handleIncreaseBet);
+        }
+
+        const decreaseBetBtn = document.getElementById("decrease_bet");
+        if (decreaseBetBtn) {
+            decreaseBetBtn.addEventListener("click", handleDecreaseBet);
+        }
+
+        const hitBtn = document.getElementById("hit");
+        if (hitBtn) {
+            hitBtn.addEventListener("click", handleHit);
+        }
+
+        const standBtn = document.getElementById("stand");
+        if (standBtn) {
+            standBtn.addEventListener("click", handleStand);
+        }
+
+        const dealBtn = document.getElementById("deal");
+        if (dealBtn) {
+            dealBtn.addEventListener("click", handleDeal);
+        }
+    }
+});
+
+// Handler functions
+function handleRegistration() {
+    const username = document.getElementById('username').value;
+    if (username) {
+        fetch('http://127.0.0.1:3000/username', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ username })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.username) {
+                window.location.href = `gameplay.html?username=${username}`;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            addMessage('Error registering username');
+        });
+    }
+}
+
+function handleReset() {
+    clearMessages();
     gamePlay.reset();
     addMessage("Reseting the Game...");
-    gamePlay.reportOutcome("reset");
+}
 
-
-    
-});
-
-
-document.getElementById("increase_bet").addEventListener("click", function() {
-    //increase the bet
+function handleIncreaseBet() {
     blackjack.setBet(betAmount);
-});
+    sendPlayerAction('betUpdate', { amount: blackjack.player.getBet() });
+}
 
-document.getElementById("decrease_bet").addEventListener("click", function() {
-    //decrease the bet
+function handleDecreaseBet() {
     blackjack.setBet(-betAmount);
-});
+    sendPlayerAction('betUpdate', { amount: blackjack.player.getBet() });
+}
 
-
-document.getElementById("hit").addEventListener("click", function() {
+function handleHit() {
     clearMessages();
-    
-    //add a hit message 
     addMessage(`Player hit a card`);
-    // Deal card to user
-    blackjack.hit('player');
-    
+    sendPlayerAction('hit');
+}
 
-
-});
-
-document.getElementById("stand").addEventListener("click", function() {
+function handleStand() {
     clearMessages();
-
     addMessage(`Player stands`);
-    //stand, then deal cards to the dealer
-    blackjack.stand();
-    
-});
+    sendPlayerAction('stand');
+    makeUnclickable(document.getElementById('hit'));
+    makeUnclickable(document.getElementById('stand'));
+}
 
-document.getElementById("deal").addEventListener("click", function() {
+function handleDeal() {
     clearMessages();
-
     gamePlay.bet();
-
-    //deal cards to the player and the dealer
-    blackjack.deal();
-
-    //enable the hit and stand buttons 
-    makeClickable(document.getElementById("hit"));
-    makeClickable(document.getElementById("stand"));
-
-    //enable the AJAX request buttons
-    makeClickable(document.getElementById("xhr"));
-
-    //disable the bet buttons
+    
     makeUnclickable(document.getElementById("increase_bet"));
     makeUnclickable(document.getElementById("decrease_bet"));
-
-    //disable the deal button
     makeUnclickable(document.getElementById("deal"));
-
-    addMessage(`Dealer deals cards`);
     
-});
+    addMessage(`Dealer deals cards`);
+    sendPlayerAction("deal");
+}
 
 
 
-
-
-
-window.addEventListener('load', function() {
-    //get the username
-    let username = gamePlay.getUsername();
-    //add the username to the username div
-    addUsername(username);
-    //add a message to the message div
-    addMessage(`Welcome to Blackjack!`);
-});
 
 
 

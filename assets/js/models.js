@@ -6,7 +6,8 @@
 //setup variables for global use
 const suits = ["H","S","C","D"];	//allowable suits
 const maxCardsPerSuit = 13;		//max cards per suit
-
+const thisPlayer = window.location.pathname.includes('player1') ? 'player1' : 'player2';
+const otherPlayer = thisPlayer === 'player1' ? 'player2' : 'player1';
 
 const bustLimit = 21;
 const aceValue = 11;
@@ -42,105 +43,6 @@ var card = {
 
 };
 
-//object to define a card deck
-var card_deck = {
-    deck: [],
-    discard: [],
-    cardsleft: 0,
-    standardDeckSize: 52,
-
-
-    //creates 52 cards (four suits: Hearts, Clubs, Spades, Diamonds, 13 each (Ace, 2-10, Jack, Queen, King))
-    initialize: function () {
-
-        this.cardsleft = this.standardDeckSize;
-        //takes every possible suit and card value
-        for(let suit of suits){
-            for(i = 1; i <= maxCardsPerSuit; i++){
-
-                //create a new card and give it the suit and card values
-                let newCard = Object.create(card);
-                if(i === 1){
-                    newCard.setRank(aceValue);
-                }
-                //if the card is a face card, set the rank to 10
-                else if(i >= 11){
-                    newCard.setRank(10);
-                }
-                //if the card is not a face card, set the rank to the card value
-                else{
-                    newCard.setRank(i);
-                }
-                //set the suit of the card
-                newCard.setSuit(suit)
-                //set the name of the card
-                newCard.setName(suit + i);
-                
-                //put it into the deck
-                this.deck.push(newCard)
-            }
-            
-        }
-        cardsleft = this.standardDeckSize;
-        //test to see if the deck is created correctly
-        console.log(this.deck);
-        
-      },
-    //randomly shuffle the deck
-    shuffle: function(){
-        //shuffle the deck
-        for(i in this.deck){
-            //get a random card from the deck
-            const j = Math.floor(Math.random() * (this.cardsleft));
-            //swap the card with the current card
-            [this.deck[i], this.deck[j]] = [this.deck[j], this.deck[i]];
-        }
-        //update the card counter
-        updateCardCounter(this.cardsleft);
-
-    },
-
-    //discard a card to the discard pile
-    discardCard: function(card){
-        //add the card to the discard pile
-        this.discard.push(card);
-    },
-
-    //shuffle the discard pile into the deck
-    discardShuffle: function(){
-        //while there are cards in the discard pile
-        while(this.discard.length > 0){
-            //get a card from the discard pile
-            let card = this.discard.pop();
-            //add it to the deck
-            this.deck.push(card);
-            //increment the card counter
-            this.cardsleft += 1;
-        }
-        //shuffle the deck
-        this.shuffle();
-    },
-
-    //deal a card from the deck
-    dealCard: function(){
-        //get the top card from the deck
-        let topCard = this.deck.pop();
-        //decrement the card counter
-        this.cardsleft -= 1;
-        //if there are less than 16 cards in the deck, shuffle the discard pile into the deck
-        if(this.cardsleft < 16){
-            addMessage("Less than 16 cards left. Shuffling discard pile...");
-            this.discardShuffle();
-        }
-
-        //update the card counter
-        updateCardCounter(this.cardsleft);
-        //return the top card
-        return topCard;
-    },
-
-
-};
 
 
 //object defining a players hand
@@ -148,25 +50,36 @@ var hand = {
     cards: [],
     score: 0,
     aces: 0,
+    currentMove: '', // Track current move (hit/stay)
 
     initialize: function() {
-        //set the cards to an empty array with its own space in memory
         this.cards = [];
-        //set the score to 0
         this.score = 0;
-        //set the aces to 0
         this.aces = 0;
+        this.currentMove = '';
     },
 
-    //add a card to the hand
+    setMove: function(move) {
+        this.currentMove = move;
+        this.updatePlayerStatus(move);
+        if(move === 'bust'){
+            sendPlayerAction('stand');
+        }
+    },
+
+    updatePlayerStatus: function(move) {
+        sendPlayerAction('updateStatus', {
+            username: gamePlay.getUsername(),
+            status: move,
+            roundsPlayed: gamePlay.gamesPlayed
+        });
+    },
+
     addCard: function(card) {
-        //add the card to the hand
         this.cards.push(card);
-        //if the card is an ace, increment the ace counter
         if(card.getRank() === aceValue){
             this.aces += 1;
         }
-        //set the score of the hand
         this.setScore(card.getRank());
     },
 
@@ -196,7 +109,7 @@ var hand = {
         //while there are cards in the hand
         while (this.cards.length > 0){
             //discard the card to the discard pile
-            blackjack.carddeck.discardCard(this.cards.pop());
+            this.cards.pop();
         }
         this.score = 0;
         this.aces = 0;
@@ -231,25 +144,20 @@ var user = {
     userBet: 0,
     userWallet: Object.create(wallet),
 
-    setUserBet: function(amount){
-        //add the bet to the user's bet
-        this.userBet += amount;
-        //decrement the wallet by the amount bet
-        this.userWallet.decrementValue(amount)
-    },
-
     initialize: function(){
-        //set the wallet to 1000
         this.userWallet.setValue(startingCash);
-        //initialize the hand
         this.userhand.initialize();
+        this.userBet = 0;
     },
 
     //reset the bet
-    resetBet: function(){
-        //set the bet to 0
-        const startingPoint = 0;
-        this.userBet = startingPoint;
+    resetBet: function() {
+        this.userBet = 0;
+        updateBet(0);
+        // Reset to initial betting state
+        makeUnclickable(document.getElementById('deal'));
+        makeClickable(document.getElementById('increase_bet'));
+        makeUnclickable(document.getElementById('decrease_bet'));
     },
 
     getBet: function(){
@@ -259,123 +167,161 @@ var user = {
 
 //blackjack game model
 var blackjack = {
-    carddeck: Object.create(card_deck),
     dealer: Object.create(hand),
     player: Object.create(user),
-    //Initializes a blackjack game (creates a deck, shuffles the deck, gets the users's chips ready)
-    initialize: function () {
-        this.carddeck.initialize();
-        this.carddeck.shuffle();
-        this.player.initialize();
-        this.dealer.initialize(); 
-
-        //adds the bet to the bet section
-        updateBet(this.player.getBet());
-        //initializes the buttons
-        initializeButtons();
-        //updates the wallet on the game screen
-        updateWallet(this.player.userWallet.getValue());
-
-        gamePlay.reportOutcome("reset");
-
-        
-        
-    },
-
-    //hit using dealer, then player, then dealer, and then player again.
-    deal: function(){
-
-        //clear the old cards off the screen
-        resetView();
-
-        //discard the cards from both hands.
-        this.discardHands();
-
-        //deal 4 cards
-        for(let i = 0; i < 4; i++){
-            //deal to dealer if even, player if odd
-            if(i % 2 === 0){
-                this.dealerHit();
-
-            }
-            else{
-                this.hit();
-            }
-        }
-
-        let dealerPoint = '?';
-        updatePoints(dealerPoint, "dealer");
-        
-    },
-
-    //deal a card to the player
-    hit: function(){
-        //take a card from the deck 
-        let card = this.carddeck.dealCard();
-        //add it to the player's hand
-        this.player.userhand.addCard(card);
-        //update the points on the game screen
-        updatePoints(this.player.userhand.getScore(), "player")
-        //show the card on the game screen
-        showDealtCard('player', false, card.getName());
-
-        //check if the player busted
-        if(this.didPlayerBust()){
-            //end the round
-           gamePlay.endRound();            
-        }
-        //check if the player got 21
-        else if(this.didPlayerGetTwentyOne()){
-            makeUnclickable(document.getElementById("hit"));
-        }
-
-    },
-
-    //deal a card to the dealer
-    dealerHit: function(){
-        //take a card from the deck 
-        let card = this.carddeck.dealCard();
-        //add it to the dealer's hand
-        this.dealer.addCard(card);
-        //show the card on the game screen
-        if(this.dealer.cards.length === 1){
-            //if it is the first card, show it face down
-            showDealtCard('dealer', true, card.getName());
-        }
-        else{
-            //if it is not the first card, show it face up
-            showDealtCard('dealer', false, card.getName());
-        }
-
-    },
-
-    //dealer stands, player can no longer hit
-    stand: function(){
-
-        //dealer limit is 17        
-        let dealerLimit = 17;
-
-        //dealer hits until the dealer limit is reached or the dealer busts
-        while(this.dealer.getScore() < dealerLimit){ 
-            this.dealerHit();
-            //show the points on the game screen
-        }
-
-        //end the round
-        gamePlay.endRound();
+    otherPlayer: Object.create(user),
     
-
+    initialize: function() {
+        // Reset dealer
+        this.dealer = Object.create(hand);
+        this.dealer.initialize();
+        
+        // Create completely new player objects
+        this.player = Object.create(user);
+        this.player.userhand = Object.create(hand);
+        this.player.userWallet = Object.create(wallet);
+        this.player.userWallet.setValue(1000); // Set initial wallet amount
+        this.player.initialize();
+        
+        // Create completely new otherPlayer objects
+        this.otherPlayer = Object.create(user);
+        this.otherPlayer.userhand = Object.create(hand);
+        this.otherPlayer.userWallet = Object.create(wallet);
+        this.otherPlayer.initialize();
+        
+        // Initialize UI
+        updateWallet(this.player.userWallet.getValue());
+        updateBet(this.player.userBet);
+        
+        // Initialize buttons
+        initializeButtons();
     },
 
-    //set the bet to the amount bet
-    setBet: function(amount){
-        //sets the bet to the amount bet
-        this.player.setUserBet(amount);
-        
-        //check the betting amount to the wallet and disable the buttons if necessary
-        gamePlay.checkBettingAmount();
-       
+    //discard the cards
+    discardCards: function(){
+        //reset the dealer
+        this.dealer.reset();
+        //reset the player's hand
+        this.player.userhand.reset();
+        //reset the other player's hand
+        this.otherPlayer.userhand.reset();
+    },
+    //update the player status
+    updatePlayerStatus: function() {
+        return thisPlayer === 'player1';
+        return playerType === 'player1';
+    },
 
+    //create a card
+    createCard: function(inputCard) {
+        //create a new card
+        let newCard = Object.create(card);
+        //set the name of the card
+        newCard.setName(inputCard.name);
+        //set the rank of the card
+        newCard.setRank(inputCard.rank);
+        //set the suit of the card
+        newCard.setSuit(inputCard.suit);
+        //return the new card
+        return newCard;
+    },
+
+    //hit the player
+    hit: function(card, playerType) {
+        console.log(`Processing hit for ${playerType}:`, card);
+        console.log(`the variable thisPlayer is ${thisPlayer}`);
+        console.log(`the variable otherPlayer is ${otherPlayer}`);
+        //create a new card
+        let newCard = this.createCard(card);
+        
+        //if the player is the dealer
+        if (playerType === 'dealer') {
+            console.log('Dealer hand updated:', this.dealer.cards);
+            console.log('Dealer score:', this.dealer.getScore());
+            if(this.dealer.cards.length === 0){
+                // Update dealer's card in view
+                showDealtCard('dealer', true, card.name);
+            }
+            //if the dealer has more than one card
+            else{
+                showDealtCard('dealer', false, card.name);
+            }
+            //add the card to the dealer's hand
+            this.dealer.addCard(newCard);
+            //if the dealer has two cards
+            if(this.dealer.cards.length === 2) {
+                updatePoints("?", 'dealer');
+            }
+            //if the dealer has more than two cards
+            else{
+                updatePoints(this.dealer.getScore(), 'dealer');
+            }
+        } 
+        else {
+            // Determine which player object to update based on playerType
+            if(playerType === thisPlayer){
+                this.player.userhand.addCard(newCard);
+                showDealtCard(playerType, false, card.name);
+                updatePoints(this.player.userhand.getScore(), thisPlayer);
+            }
+            //if the player is the other player
+            else{
+                this.otherPlayer.userhand.addCard(newCard);
+                showDealtCard(playerType, false, card.name);
+                updatePoints(this.otherPlayer.userhand.getScore(), otherPlayer);
+            }
+
+            // Check for bust or twenty-one only for the current player
+            if (playerType === thisPlayer) {
+                if (this.didPlayerBust()) {
+                    console.log('Player busted!');
+                    this.player.userhand.setMove('bust');
+                    //make the hit button unclickable
+                    makeUnclickable(document.getElementById('hit'));
+                    makeUnclickable(document.getElementById('stand'));
+                } else if (this.didPlayerGetTwentyOne()) {
+                    console.log('Player got 21!');
+                    this.player.userhand.setMove('twenty-one');
+                    makeUnclickable(document.getElementById('hit'));
+                }
+            }
+        }
+    },
+
+    //stand the player
+    stand: function() {
+        console.log('Player stands');
+        gamePlay.endRound();
+    },
+
+     //set the bet to the amount bet
+     setBet: function(amount) {
+        // If increasing bet
+        if (amount > 0) {
+            // Check if player has enough money
+            if (amount <= this.player.userWallet.getValue()) {
+                this.player.userBet += amount;
+                this.player.userWallet.decrementValue(amount);
+                updateBet(this.player.userBet);
+                updateWallet(this.player.userWallet.getValue());
+                // Enable deal button if bet is placed
+                if (this.player.userBet > 0) {
+                    makeClickable(document.getElementById("deal"));
+                }
+                gamePlay.checkBettingAmount();
+            }
+        }
+        // If decreasing bet
+        else if (amount < 0) {
+            // Check if there's bet to decrease
+            if (this.player.userBet >= Math.abs(amount)) {
+                this.player.userBet += amount; // amount is negative
+                this.player.userWallet.addValue(Math.abs(amount));
+                updateBet(this.player.userBet);
+                updateWallet(this.player.userWallet.getValue());
+                gamePlay.checkBettingAmount();
+            }
+        }
     },
     
     //check if the player busted
@@ -400,17 +346,6 @@ var blackjack = {
 
     },
 
-    //reset the hands
-    discardHands: function(){
-        //reset the player's hand
-        this.player.userhand.reset();
-        //reset the dealer's hand
-        this.dealer.reset();
-
-
-    },
-
-    //determine who won the round
     whoWon: function(){
         //if the player's score is greater than 21, the dealer won
         if(this.player.userhand.getScore() > bustLimit){
@@ -437,89 +372,48 @@ var blackjack = {
 
     },
 
+    discardCards: function(){
+        this.dealer.reset();
+        this.player.userhand.reset();
+        this.otherPlayer.userhand.reset();
+    },
+
+
     reset: function(){
-        // Reset the player's wallet to the starting cash
         this.player.userWallet.setValue(startingCash);
-        // Reset the player's bet to 0
         this.player.resetBet();
+        updateBet(this.player.getBet());
+        updateWallet(this.player.userWallet.getValue());
+        this.player.userhand.initialize();
+        this.dealer.initialize();
+        this.otherPlayer.userhand.initialize();
 
-        //update the bet and wallet
-        updateBet(blackjack.player.getBet());
-        updateWallet(blackjack.player.userWallet.getValue());
-
-        // Discard the hands to start fresh
-        this.discardHands();
-        // Reset the deck to its initial state
-        this.carddeck.discardShuffle();
-
+        resetView();
         
-    },
+        sendPlayerAction('reset');
 
-    
- 
-//saving this code as comments so i can borrow from it
-/*
-    getRemoteAdvice: function(reqeustType){
-        
-        //create a new request object for the remote server, using 
-        // XMLHttpRequest, fetch, or jQuery as specified in the requestType parameter.
-        // Using the data from player and dealer hand.
-        const myURL = `http://127.0.0.1:3000/?userscore=${this.player.userhand.getScore()}&dealerscore=${this.dealer.cards[1].getRank()}`;
-
-
-        console.log(myURL);
-        if(reqeustType === "xhr"){
-            console.log("xhr request");
-            
-            const xhr = new XMLHttpRequest();
-            xhr.open("GET", myURL);
-            
-            xhr.onreadystatechange = () => {
-                if(xhr.readyState === 4 && xhr.status === 200){
-                    const myData = JSON.parse(xhr.responseText);
-                    console.log(myData);
-                    console.log(myData.content.Advice);
-                    
-                    let advice = String(myData.content.Advice);
-
-                    this.useAdvice(advice);
-                    
-                }
-                else if(xhr.readyState === 4){
-                    addMessage("Failed to get remote advice, try again or something else...");
-                }
-            }
-            
-            xhr.send(); 
-        }
-        else{
-            console.error("Invalid request type");
-        }
-
-        
-
-        
-        
-        
-    },
-
-
-    //check if the request is good
-    isRequestGood: function(status){
-        if(returnValue === 200){
-            return true;
-        }
-        else{
-            return false;
-        }
     }
+};
 
-    */
-
-
-
-
+var gameState = {
+    players: {},
     
+    setPlayerUsername: function(playerType, username) {
+        this.players[playerType] = {
+            username: username,
+            ...this.players[playerType]
+        };
+        // Notify view of change
+        updateView('username', { playerType, username });
+    },
+
+    getPlayerUsername: function(playerType) {
+        return this.players[playerType]?.username || null;
+    },
+
+    initialize: function() {
+        this.players = {};
+    }
 };
 
 

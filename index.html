@@ -14,17 +14,32 @@
             <header>
                 <h1>WELCOME TO CSCE 315 BLACKJACK GAME</h1>
             </header>
-            <div id = "wrapper">
+            <div id = "wrapper">88
         <main>
             <div id = "form">
-                <form action="gameplay.html" method="get">
-                    <label for="username">Username:</label>
-                    <input type="text"  id="username" name="username" required>
-                    <button type="submit" class = "canHit"id = "register">Register</button>
-                </form>
+                <label for="username">Username:</label>
+                <input type="text"  id="username" name="username" required>
+                <button class = "canHit"id = "register-btn">Register</button>
+            </div>
+            
+            <div id="highscores">
+                <h2>High Scores</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Username</th>
+                            <th>Score</th>
+                        </tr>
+                    </thead>
+                    <tbody id="highscores-body">
+                        <!-- High scores will be inserted here -->
+                    </tbody>
+                </table>
             </div>
         </main>
     </div>
         
-        
-    </body>
+<script src="assets/js/listeners.js"></script>    
+<script src="assets/js/highscores.js"></script>
+</body>

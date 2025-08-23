@@ -4,30 +4,67 @@
 /////////////////////////////////////////////////////////////////////////////////
 //app.js
 
+
+
 //const bet amount for the game
 var gamePlay = {
     Blackjack: Object.create(blackjack),
+    username: '',
+    gamesPlayed: 0,
+    gameOver : false,
 
-    playGame: function(){
 
-        blackjack.initialize();
-
-
+    initialize: function() {
+        const username = this.getUsername();
+        if (username) {
+            blackjack.initialize();
+        } else {
+            window.location.href = 'index.html';
+        }
     },
 
-    getUsername: function(){
-        //get the content after the ? in the url
+    getUsername: function() {
         const urlParams = new URLSearchParams(window.location.search);
-        //get the username from the url
-        const username = urlParams.get('username');
-        return username;
+        return urlParams.get('username');
     },
+
+    bet: function(){
+        addMessage(`Bet placed: ${blackjack.player.getBet()}`);
+        if (blackjack.player.userWallet.getValue() === 0){
+            addMessage("ALL IN!!!!!");
+        }
+    },
+
+    checkBettingAmount: function() {
+        const currentBet = blackjack.player.getBet();
+        const currentWallet = blackjack.player.userWallet.getValue();
+        const dealButton = document.getElementById('deal');
+        const increaseBetButton = document.getElementById('increase_bet');
+        const decreaseBetButton = document.getElementById('decrease_bet');
+
+        if (currentWallet > 0) {
+            makeClickable(increaseBetButton);
+        } else {
+            makeUnclickable(increaseBetButton);
+        }
+
+        if (currentBet > 0) {
+            makeClickable(decreaseBetButton);
+            makeClickable(dealButton);
+        } else {
+            makeUnclickable(decreaseBetButton);
+            makeUnclickable(dealButton);
+        }
+    },
+
 
     endRound: function(){
 
         //bust limit
         let bustLimit = 21
 
+        updatePoints(blackjack.dealer.getScore(), "dealer");
+        
         //disable the hit and stand buttons
         makeUnclickable(document.getElementById("hit"));
         makeUnclickable(document.getElementById("stand"));
@@ -43,35 +80,36 @@ var gamePlay = {
         if (blackjack.player.userhand.getScore() > bustLimit){
             //player busts
             addMessage("Player busts!");
-            this.reportOutcome("loss");
+
         }
         else if (blackjack.dealer.getScore() > bustLimit){
             //dealer busts
             addMessage("Dealer busts!");
-            this.reportOutcome("won");
+
             this.updateWinnings();
 
          } //dealer wins
         else if (winner === "Player"){ //player wins
             //update the view to display the winner
             addMessage("Player wins!");
-            this.reportOutcome("won");
+
             this.updateWinnings();
         }
 
         else if(winner === "Dealer"){ //dealer wins
             //update the view to display the winner
             addMessage("Dealer wins!");
-            this.reportOutcome("loss");
+
             
         }
         else{
             addMessage("Ties go to the house :(")
-            this.reportOutcome("draw");
         } //ties go to the house
 
         //reset the bet
         blackjack.player.resetBet();
+
+        blackjack.discardCards();
 
         //update the bet on the view
         updateBet(blackjack.player.getBet());
@@ -93,111 +131,112 @@ var gamePlay = {
     },
 
     //check if the game is over
-    isGameOver: function(){
-        //check if the player has lost all their money
-        if (blackjack.player.userWallet.getValue() <= 0){
+    isGameOver: function() {
+        // Check if the player has lost all their money
+        if (blackjack.player.userWallet.getValue() <= 0) {
             addMessage("Game over! You lost all your money.");
-        }
-        else{
+            this.gamesPlayed = 0;
+            this.gameOver = true;
+            // Disable all betting buttons when out of money
+            makeUnclickable(document.getElementById('increase_bet'));
+            makeUnclickable(document.getElementById('decrease_bet'));
+            makeUnclickable(document.getElementById('deal'));
+        } else {
+            // Reset buttons for next round, but keep increase_bet clickable if player has money
             resetButtons();
-
-            
+            blackjack.discardCards();
+            this.gamesPlayed++;
         }
 
+        
+        // Call sendNewScore as a method of gamePlay
+        this.sendNewScore();
     },
 
-    //reset the game
+    sendNewScore: function() {
+        const username = this.getUsername();
+        if (!username) {
+            console.error('No username found');
+            return;
+        }
+
+        // Convert gameOver to 'gameover' string for consistency
+        const status = this.gameOver ? 'gameover' : 'playing';
+        
+        console.log('Sending score update:', {
+            username,
+            score: this.gamesPlayed,
+            status,
+            wallet: blackjack.player.userWallet.getValue()
+        });
+
+        fetch(`http://127.0.0.1:3000/player1?username=${username}&score=${this.gamesPlayed}&status=${status}&wallet=${blackjack.player.userWallet.getValue()}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            // Use proper query parameters
+            params: new URLSearchParams({
+                username: username,
+                score: this.gamesPlayed,
+                status: status,
+                wallet: blackjack.player.userWallet.getValue()
+            }).toString()
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            console.log("Score update response:", response);
+        })
+        .then(data => {
+            console.log('Score update response:', data);
+        })
+        .catch(error => {
+            console.error('Error sending score:', error);
+        });
+    },
+
+
+    determineWinner: function() {
+        const playerScore = blackjack.player.userhand.getScore();
+        const dealerScore = blackjack.dealer.getScore();
+        const currentBet = blackjack.player.getBet();
+        
+        if (playerScore > 21) {
+            this.handleLoss('Player busted! Dealer wins!');
+        } 
+        else if (dealerData.busted) {
+            this.handleWin('Dealer busted! Player wins!', currentBet * 2);
+        } 
+        else if (dealerScore > playerScore) {
+            this.handleLoss(`Dealer wins with ${dealerScore}!`);
+        } 
+        else if (playerScore > dealerScore) {
+            this.handleWin(`Player wins with ${playerScore}!`, currentBet * 2);
+        } 
+        else {
+            this.handleTie('Tie goes to the house :(');
+        }
+    },
+
+
     reset: function(){
-
-        //reset the game model
+        this.gameOver = true;
         blackjack.reset();
-        
-        //reset the view to the initial state
+        this.sendNewScore();
         resetView();
-        //reset the bet on the view
         resetButtons();
+        this.gamesPlayed = 0;
+        this.gameOver = false;
 
-    },
-
-    bet: function(){
-        addMessage(`Bet placed: ${blackjack.player.getBet()}`);
-        if (blackjack.player.userWallet.getValue() ===0){
-            addMessage("ALL IN!!!!!");
-        }
-        
-    },
-
-    checkBettingAmount: function(){
-        //get the current bet and wallet
-        let currentBet = blackjack.player.getBet();
-        let currentWallet = blackjack.player.userWallet.getValue();
-
-        if(currentWallet <= 0){
-            //disable the increase bet button
-            makeUnclickable(document.getElementById("increase_bet"));
-        }
-        //if the player's bet is 0, disable the decrease bet button
-        else if(currentBet <= 0){
-            //disable the decrease bet button
-            makeUnclickable(document.getElementById("decrease_bet"));
-        }
-        //if the player's bet is not 0, ensure all buttons are clickable
-        else{
-            //if the player's bet is not 0, enable the decrease bet button
-            makeClickable(document.getElementById("decrease_bet"));
-            //enable the bet button
-            makeClickable(document.getElementById("deal"));
-            //enable the increase bet button
-            makeClickable(document.getElementById("increase_bet"));
-        }
-
-        //update the bet on the view
-        updateBet(currentBet);
-
-        //update the wallet on the view
-        updateWallet(currentWallet);
-        
-    },
-
-    //report the outcome of the game
-
-    reportOutcome: function(outcome) {
-        // Construct the URL to send to the server
-        // outcome is either "won", "loss", "draw", or "reset"
-        // reset is used to reset the game score back to 0-0-0
-        let myURL;
-        if (outcome === "won" || outcome === "loss" || outcome === "draw") {
-            myURL = `http://127.0.0.1:3000/?outcome=${outcome}`;
-        } else if (outcome === "reset") {
-            myURL = `http://127.0.0.1:3000/?reset=true`;
-        }
-    
-        // Create a new XMLHttpRequest object
-        const xhr = new XMLHttpRequest();
-        
-        // Initialize the request
-        xhr.open("GET", myURL, true);  // "true" ensures it's asynchronous
-        xhr.onreadystatechange = () => {
-            if(xhr.readyState === 4 && xhr.status === 200){
-                //make the response text a JSON object
-                const myData = JSON.parse(xhr.responseText);
-                //add the message to the view
-                addMessage(`Win/Loss Ratio: wins:${myData.content.win}, loss:${myData.content.loss}, draw:${myData.content.draw}`);
-                
-            }
-            else if(xhr.readyState === 4){
-                console.log("Failed to get the win/loss ratio");
-            }
-        }
-    
-        // Send the request asynchronously
-        xhr.send();
     }
-
 };
 
-//start a blackjack game
-gamePlay.playGame();
+// Start the game only after DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    gamePlay.initialize();
+});
 
 
 
